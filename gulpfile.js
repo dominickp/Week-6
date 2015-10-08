@@ -8,7 +8,7 @@ var Server = require('karma').Server;
 //********** build stuff *****************
 
 gulp.task('buildVendor', function(){
-    gulp.src([
+    return gulp.src([
         'bower_components/jquery/dist/jquery.min.js', // Include jQuery first
         'bower_components/**/*.min.js' // all other minified vendor files
     ])
@@ -17,8 +17,15 @@ gulp.task('buildVendor', function(){
         .pipe(gulp.dest('bist'));
 });
 
+gulp.task('buildApp', function(){
+    return gulp.src('src/js/**/*.js')
+        .pipe(concat('app.js'))
+        .pipe(uglify())
+        .pipe(gulp.dest('bist'));
+});
+
 gulp.task('buildCSS', function(){
-    gulp.src([
+    return gulp.src([
         'bower_components/bootstrap/dist/css/bootstrap.css',
         'src/css/**/*.css'
     ])
@@ -27,7 +34,12 @@ gulp.task('buildCSS', function(){
         .pipe(gulp.dest('bist'));
 });
 
-gulp.task('build', ['buildVendor', 'buildCSS']);
+gulp.task('moveHTML', function(){
+    return gulp.src('src/**/*.html')
+        .pipe(gulp.dest('bist'));
+});
+
+gulp.task('build', ['buildVendor', 'buildCSS', 'buildApp', 'moveHTML']);
 
 //************************************************
 
@@ -39,10 +51,11 @@ gulp.task('karma', function (done) {
 });
 
 gulp.task('jshint', function () {
-    gulp.src(['src/js/**/*.js', 'src/tests/**/*.js'])
+    return gulp.src(['src/js/**/*.js', 'src/tests/**/*.js'])
         .pipe(jshint())
         .pipe(jshint.reporter('jshint-stylish'));
 });
 
 gulp.task('test', ['jshint', 'karma']);
 
+gulp.task('default', ['build', 'test']);

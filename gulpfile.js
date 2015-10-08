@@ -4,6 +4,7 @@ var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var minifycss = require('gulp-minify-css');
 var Server = require('karma').Server;
+var connect = require('gulp-connect');
 
 //********** build stuff *****************
 
@@ -14,14 +15,16 @@ gulp.task('buildVendor', function(){
     ])
         .pipe(concat('vendors.js'))
         .pipe(uglify())
-        .pipe(gulp.dest('bist'));
+        .pipe(gulp.dest('bist'))
+        .pipe(connect.reload());
 });
 
 gulp.task('buildApp', function(){
     return gulp.src('src/js/**/*.js')
         .pipe(concat('app.js'))
         .pipe(uglify())
-        .pipe(gulp.dest('bist'));
+        .pipe(gulp.dest('bist'))
+        .pipe(connect.reload());
 });
 
 gulp.task('buildCSS', function(){
@@ -31,7 +34,8 @@ gulp.task('buildCSS', function(){
     ])
         .pipe(concat('styles.css'))
         .pipe(minifycss())
-        .pipe(gulp.dest('bist'));
+        .pipe(gulp.dest('bist'))
+        .pipe(connect.reload());
 });
 
 gulp.task('moveHTML', function(){
@@ -58,4 +62,20 @@ gulp.task('jshint', function () {
 
 gulp.task('test', ['jshint', 'karma']);
 
-gulp.task('default', ['build', 'test']);
+gulp.task('default', ['build', 'test', 'connect', 'watch']);
+
+//************************************************
+
+gulp.task('connect', function(){
+    connect.server({
+        root: 'bist',
+        livereload: true
+    });
+});
+//********* watches *************************
+
+gulp.task('watch', function(){
+    gulp.watch('src/js/**/*.js', ['buildApp', 'test']);
+    gulp.watch('src/css/**/*.css', ['buildCSS']);
+    gulp.watch('src/**/*.html', ['moveHTML']);
+});
